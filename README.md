@@ -1,5 +1,8 @@
 # kaihou.nvim
 
+> [!WARNING]
+> **⚠️ This project is still under development and has not been tested yet. Use at your own risk. ⚠️**
+
 [日本語](docs/README.ja.md)
 
 `kaihou.nvim` helps you "free" your current project from Windows Defender real-time scanning by managing Defender exclusion paths directly from Neovim.
