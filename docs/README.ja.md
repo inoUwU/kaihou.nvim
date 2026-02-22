@@ -14,9 +14,9 @@
 - スマートなフォールバックを備えた `vim.fs.root()` を使用したプロジェクトルート検出
 - Defenderの変更前に管理者権限をチェック
 - シンプルなコマンド:
-  - `:DefenderCheck`
-  - `:DefenderToggle`
-  - `:DefenderList`
+  - `:DefenderCheck` / `:KaihouCheck`
+  - `:DefenderToggle` / `:KaihouToggle`
+  - `:DefenderList` / `:KaihouList`
 - `VimEnter` でのオプショナルな自動チェック
 - 外部依存なし
 - Lazy.nvim互換
@@ -55,12 +55,12 @@ require("kaihou").setup({
 
 ## コマンド
 
-- `:DefenderCheck`
+- `:DefenderCheck` / `:KaihouCheck`
   - 現在のプロジェクトルートが既にDefenderの除外設定に含まれているか確認します。
-- `:DefenderToggle`
+- `:DefenderToggle` / `:KaihouToggle`
   - 現在のプロジェクトルートをDefenderの除外設定に追加/削除します。
   - Defenderの設定を変更するには管理者権限が必要です。
-- `:DefenderList`
+- `:DefenderList` / `:KaihouList`
   - `vim.ui.select` を使用して、現在のDefenderの除外パスを一覧表示します。
 
 ## プロジェクトルートの検出
