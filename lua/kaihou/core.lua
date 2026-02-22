@@ -178,7 +178,11 @@ function M.toggle_current_project(callback)
 
   M.is_admin(function(admin, admin_err)
     if not admin then
-      callback(false, { action = "none", root = detect_root(), skipped = true }, admin_err or "Administrator privilege is required")
+      callback(
+        false,
+        { action = "none", root = detect_root(), skipped = true },
+        admin_err or "Administrator privilege is required"
+      )
       return
     end
 
