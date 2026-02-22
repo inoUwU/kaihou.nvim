@@ -14,9 +14,9 @@
 - Project root detection using `vim.fs.root()` with smart fallbacks
 - Administrator privilege check before any Defender modification
 - Simple commands:
-  - `:DefenderCheck`
-  - `:DefenderToggle`
-  - `:DefenderList`
+  - `:DefenderCheck` / `:KaihouCheck`
+  - `:DefenderToggle` / `:KaihouToggle`
+  - `:DefenderList` / `:KaihouList`
 - Optional auto-check on `VimEnter`
 - No external dependencies
 - Lazy.nvim compatible
@@ -55,12 +55,12 @@ require("kaihou").setup({
 
 ## Commands
 
-- `:DefenderCheck`
+- `:DefenderCheck` / `:KaihouCheck`
   - Checks whether the current project root is already in Defender exclusions.
-- `:DefenderToggle`
+- `:DefenderToggle` / `:KaihouToggle`
   - Adds/removes the current project root from Defender exclusions.
   - Requires administrator privileges to modify Defender preferences.
-- `:DefenderList`
+- `:DefenderList` / `:KaihouList`
   - Lists current Defender exclusion paths using `vim.ui.select`.
 
 ## Project Root Detection

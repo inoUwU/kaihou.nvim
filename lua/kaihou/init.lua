@@ -24,17 +24,17 @@ function M._create_commands()
     return
   end
 
-  vim.api.nvim_create_user_command("DefenderCheck", function()
-    ui.check_current_project()
-  end, { desc = "Check Defender exclusion for current project" })
+  local cmds = {
+    { "Check", ui.check_current_project, "Check Defender exclusion for current project" },
+    { "Toggle", ui.toggle_current_project, "Toggle Defender exclusion for current project" },
+    { "List", ui.list_exclusions, "List Defender exclusion paths" },
+  }
 
-  vim.api.nvim_create_user_command("DefenderToggle", function()
-    ui.toggle_current_project()
-  end, { desc = "Toggle Defender exclusion for current project" })
-
-  vim.api.nvim_create_user_command("DefenderList", function()
-    ui.list_exclusions()
-  end, { desc = "List Defender exclusion paths" })
+  for _, cmd in ipairs(cmds) do
+    local suffix, fn, desc = cmd[1], cmd[2], cmd[3]
+    vim.api.nvim_create_user_command("Defender" .. suffix, fn, { desc = desc })
+    vim.api.nvim_create_user_command("Kaihou" .. suffix, fn, { desc = desc })
+  end
 
   commands_created = true
 end
