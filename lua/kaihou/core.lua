@@ -29,7 +29,9 @@ end
 
 local function run_powershell(script, callback)
   vim.system(ps_base_command(script), { text = true }, function(result)
-    callback(result)
+    vim.schedule(function()
+      callback(result)
+    end)
   end)
 end
 
