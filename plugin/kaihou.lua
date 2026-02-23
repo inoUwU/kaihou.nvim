@@ -9,4 +9,3 @@ if not ok then
 end
 
 kaihou._create_commands()
-kaihou._create_autocmd()

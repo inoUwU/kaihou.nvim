@@ -3,12 +3,9 @@ local ui = require("kaihou.ui")
 
 local M = {}
 
-local config = {
-  auto_check = true,
-}
+local config = {}
 
 local commands_created = false
-local autocmd_created = false
 
 local function apply_config()
   core.setup(config)
@@ -37,25 +34,6 @@ function M._create_commands()
   end
 
   commands_created = true
-end
-
-function M._create_autocmd()
-  if autocmd_created then
-    return
-  end
-
-  local group = vim.api.nvim_create_augroup("kaihou_nvim", { clear = true })
-  vim.api.nvim_create_autocmd("VimEnter", {
-    group = group,
-    callback = function()
-      if config.auto_check then
-        ui.check_current_project()
-      end
-    end,
-    desc = "Auto-check Defender exclusion state",
-  })
-
-  autocmd_created = true
 end
 
 function M.check()

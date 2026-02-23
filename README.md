@@ -17,7 +17,6 @@
   - `:DefenderCheck` / `:KaihouCheck`
   - `:DefenderToggle` / `:KaihouToggle`
   - `:DefenderList` / `:KaihouList`
-- Optional auto-check on `VimEnter`
 - No external dependencies
 - Lazy.nvim compatible
 
@@ -32,26 +31,8 @@
 ```lua
 {
   "inoUwU/kaihou.nvim",
-  config = function()
-    require("kaihou").setup({
-      auto_check = true,
-    })
-  end,
 }
 ```
-
-## Setup
-
-```lua
-require("kaihou").setup({
-  auto_check = true,
-})
-```
-
-### Options
-
-- `auto_check` (boolean, default: `true`)
-  - If enabled, runs `:DefenderCheck` logic automatically on `VimEnter`.
 
 ## Commands
 
