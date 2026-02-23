@@ -91,23 +91,30 @@ function M.list_exclusions(callback)
     return
   end
 
-  local script = "Get-MpPreference | Select-Object -ExpandProperty ExclusionPath"
-  run_powershell(script, function(result)
-    if result.code ~= 0 then
-      local stderr = (result.stderr or ""):gsub("%s+$", "")
-      callback(false, nil, stderr ~= "" and stderr or "Failed to list Defender exclusions")
+  M.is_admin(function(admin, admin_err)
+    if not admin then
+      callback(false, nil, admin_err or "Administrator privilege is required")
       return
     end
 
-    local list = {}
-    for line in (result.stdout or ""):gmatch("[^\r\n]+") do
-      local path = vim.trim(line)
-      if path ~= "" then
-        table.insert(list, path)
+    local script = "Get-MpPreference | Select-Object -ExpandProperty ExclusionPath"
+    run_powershell(script, function(result)
+      if result.code ~= 0 then
+        local stderr = (result.stderr or ""):gsub("%s+$", "")
+        callback(false, nil, stderr ~= "" and stderr or "Failed to list Defender exclusions")
+        return
       end
-    end
 
-    callback(true, list, nil)
+      local list = {}
+      for line in (result.stdout or ""):gmatch("[^\r\n]+") do
+        local path = vim.trim(line)
+        if path ~= "" then
+          table.insert(list, path)
+        end
+      end
+
+      callback(true, list, nil)
+    end)
   end)
 end
 
@@ -121,24 +128,31 @@ function M.check_current_project(callback)
     return
   end
 
-  local root = detect_root()
-  local root_key = normalize_path(root)
-
-  M.list_exclusions(function(ok, list, err)
-    if not ok then
-      callback(false, { root = root, excluded = false, list = {} }, err)
+  M.is_admin(function(admin, admin_err)
+    if not admin then
+      callback(false, { root = detect_root(), excluded = false, list = {} }, admin_err or "Administrator privilege is required")
       return
     end
 
-    local excluded = false
-    for _, path in ipairs(list) do
-      if normalize_path(path) == root_key then
-        excluded = true
-        break
-      end
-    end
+    local root = detect_root()
+    local root_key = normalize_path(root)
 
-    callback(true, { root = root, excluded = excluded, list = list }, nil)
+    M.list_exclusions(function(ok, list, err)
+      if not ok then
+        callback(false, { root = root, excluded = false, list = {} }, err)
+        return
+      end
+
+      local excluded = false
+      for _, path in ipairs(list) do
+        if normalize_path(path) == root_key then
+          excluded = true
+          break
+        end
+      end
+
+      callback(true, { root = root, excluded = excluded, list = list }, nil)
+    end)
   end)
 end
 

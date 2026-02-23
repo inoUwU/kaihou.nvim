@@ -58,7 +58,7 @@ If no marker is found, it falls back to the current working directory.
 ## Notes
 
 - On non-Windows systems, commands are safely skipped with warnings.
-- Defender modifications are skipped when Neovim is not running with administrator privileges.
+- All Defender commands require administrator privileges to access Windows Defender.
 - All operations are asynchronous and do not block the UI.
 
 ## License
