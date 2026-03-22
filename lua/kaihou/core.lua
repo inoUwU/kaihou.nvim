@@ -93,8 +93,9 @@ function M.list_exclusions(callback)
     return
   end
 
+  local escaped_reg_path = escape_ps_single_quote(REGISTRY_PATH)
   local script = table.concat({
-    string.format("$regPath = '%s'", REGISTRY_PATH),
+    string.format("$regPath = '%s'", escaped_reg_path),
     "if (Test-Path $regPath) {",
     "  $item = Get-Item -Path $regPath",
     "  $names = $item.GetValueNames()",
@@ -155,10 +156,11 @@ function M.check_current_project(callback)
 end
 
 function M.add_exclusion(path, callback)
+  local escaped_reg_path = escape_ps_single_quote(REGISTRY_PATH)
   local escaped_path = escape_ps_single_quote(path)
   local script = string.format(
     "New-ItemProperty -Path '%s' -Name '%s' -Value 0 -PropertyType DWord -Force | Out-Null",
-    REGISTRY_PATH,
+    escaped_reg_path,
     escaped_path
   )
 
@@ -174,10 +176,11 @@ function M.add_exclusion(path, callback)
 end
 
 function M.remove_exclusion(path, callback)
+  local escaped_reg_path = escape_ps_single_quote(REGISTRY_PATH)
   local escaped_path = escape_ps_single_quote(path)
   local script = string.format(
     "Remove-ItemProperty -Path '%s' -Name '%s'",
-    REGISTRY_PATH,
+    escaped_reg_path,
     escaped_path
   )
 
