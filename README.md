@@ -12,7 +12,8 @@
 - Windows-only safety guard
 - Async, non-blocking PowerShell execution via `vim.system()`
 - Project root detection using `vim.fs.root()` with smart fallbacks
-- Administrator privilege check before any Defender modification
+- Registry-based Defender exclusion reads (no administrator privilege needed for check/list)
+- Administrator privilege check before any Defender modification (toggle)
 - Simple commands:
   - `:DefenderCheck` / `:KaihouCheck`
   - `:DefenderToggle` / `:KaihouToggle`
@@ -24,7 +25,7 @@
 
 - Neovim 0.10+
 - Windows
-- Windows Defender available (`Get-MpPreference`, `Add-MpPreference`, `Remove-MpPreference`)
+- Windows Defender available
 
 ## Installation (lazy.nvim)
 
@@ -38,11 +39,13 @@
 
 - `:DefenderCheck` / `:KaihouCheck`
   - Checks whether the current project root is already in Defender exclusions.
+  - Reads directly from the Windows Registry; no administrator privilege required.
 - `:DefenderToggle` / `:KaihouToggle`
   - Adds/removes the current project root from Defender exclusions.
-  - Requires administrator privileges to modify Defender preferences.
+  - Requires administrator privileges to modify the registry.
 - `:DefenderList` / `:KaihouList`
   - Lists current Defender exclusion paths using `vim.ui.select`.
+  - Reads directly from the Windows Registry; no administrator privilege required.
 
 ## Project Root Detection
 
@@ -58,7 +61,8 @@ If no marker is found, it falls back to the current working directory.
 ## Notes
 
 - On non-Windows systems, commands are safely skipped with warnings.
-- All Defender commands require administrator privileges to access Windows Defender.
+- Check and list operations read the registry directly and do not require administrator privileges.
+- Toggle (add/remove) operations modify the registry and require administrator privileges.
 - All operations are asynchronous and do not block the UI.
 
 ## License

@@ -11,6 +11,8 @@ local config = {
   auto_check = true,
 }
 
+local REGISTRY_PATH = "HKLM:\\SOFTWARE\\Microsoft\\Windows Defender\\Exclusions\\Paths"
+
 local function is_windows()
   return vim.uv.os_uname().sysname == "Windows_NT"
 end
@@ -91,30 +93,33 @@ function M.list_exclusions(callback)
     return
   end
 
-  M.is_admin(function(admin, admin_err)
-    if not admin then
-      callback(false, nil, admin_err or "Administrator privilege is required")
+  local script = table.concat({
+    string.format("$regPath = '%s'", REGISTRY_PATH),
+    "if (Test-Path $regPath) {",
+    "  $item = Get-Item -Path $regPath",
+    "  $names = $item.GetValueNames()",
+    "  foreach ($n in $names) { Write-Output $n }",
+    "} else {",
+    "  Write-Output ''",
+    "}",
+  }, "\n")
+
+  run_powershell(script, function(result)
+    if result.code ~= 0 then
+      local stderr = (result.stderr or ""):gsub("%s+$", "")
+      callback(false, nil, stderr ~= "" and stderr or "Failed to read Defender exclusions from registry")
       return
     end
 
-    local script = "Get-MpPreference | Select-Object -ExpandProperty ExclusionPath"
-    run_powershell(script, function(result)
-      if result.code ~= 0 then
-        local stderr = (result.stderr or ""):gsub("%s+$", "")
-        callback(false, nil, stderr ~= "" and stderr or "Failed to list Defender exclusions")
-        return
+    local list = {}
+    for line in (result.stdout or ""):gmatch("[^\r\n]+") do
+      local path = vim.trim(line)
+      if path ~= "" then
+        table.insert(list, path)
       end
+    end
 
-      local list = {}
-      for line in (result.stdout or ""):gmatch("[^\r\n]+") do
-        local path = vim.trim(line)
-        if path ~= "" then
-          table.insert(list, path)
-        end
-      end
-
-      callback(true, list, nil)
-    end)
+    callback(true, list, nil)
   end)
 end
 
@@ -128,37 +133,34 @@ function M.check_current_project(callback)
     return
   end
 
-  M.is_admin(function(admin, admin_err)
-    if not admin then
-      callback(false, { root = detect_root(), excluded = false, list = {} }, admin_err or "Administrator privilege is required")
+  local root = detect_root()
+  local root_key = normalize_path(root)
+
+  M.list_exclusions(function(ok, list, err)
+    if not ok then
+      callback(false, { root = root, excluded = false, list = {} }, err)
       return
     end
 
-    local root = detect_root()
-    local root_key = normalize_path(root)
-
-    M.list_exclusions(function(ok, list, err)
-      if not ok then
-        callback(false, { root = root, excluded = false, list = {} }, err)
-        return
+    local excluded = false
+    for _, path in ipairs(list) do
+      if normalize_path(path) == root_key then
+        excluded = true
+        break
       end
+    end
 
-      local excluded = false
-      for _, path in ipairs(list) do
-        if normalize_path(path) == root_key then
-          excluded = true
-          break
-        end
-      end
-
-      callback(true, { root = root, excluded = excluded, list = list }, nil)
-    end)
+    callback(true, { root = root, excluded = excluded, list = list }, nil)
   end)
 end
 
 function M.add_exclusion(path, callback)
   local escaped_path = escape_ps_single_quote(path)
-  local script = string.format("Add-MpPreference -ExclusionPath '%s'", escaped_path)
+  local script = string.format(
+    "New-ItemProperty -Path '%s' -Name '%s' -Value 0 -PropertyType DWord -Force | Out-Null",
+    REGISTRY_PATH,
+    escaped_path
+  )
 
   run_powershell(script, function(result)
     if result.code ~= 0 then
@@ -173,7 +175,11 @@ end
 
 function M.remove_exclusion(path, callback)
   local escaped_path = escape_ps_single_quote(path)
-  local script = string.format("Remove-MpPreference -ExclusionPath '%s'", escaped_path)
+  local script = string.format(
+    "Remove-ItemProperty -Path '%s' -Name '%s'",
+    REGISTRY_PATH,
+    escaped_path
+  )
 
   run_powershell(script, function(result)
     if result.code ~= 0 then
@@ -192,19 +198,19 @@ function M.toggle_current_project(callback)
     return
   end
 
-  M.is_admin(function(admin, admin_err)
-    if not admin then
-      callback(
-        false,
-        { action = "none", root = detect_root(), skipped = true },
-        admin_err or "Administrator privilege is required"
-      )
+  M.check_current_project(function(ok, state, err)
+    if not ok then
+      callback(false, { action = "none", root = state.root }, err)
       return
     end
 
-    M.check_current_project(function(ok, state, err)
-      if not ok then
-        callback(false, { action = "none", root = state.root }, err)
+    M.is_admin(function(admin, admin_err)
+      if not admin then
+        callback(
+          false,
+          { action = "none", root = state.root, skipped = true },
+          admin_err or "Administrator privilege is required"
+        )
         return
       end
 

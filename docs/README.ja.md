@@ -12,7 +12,8 @@
 - Windows専用のセーフティガード
 - `vim.system()` を介した非同期、ノンブロッキングのPowerShell実行
 - スマートなフォールバックを備えた `vim.fs.root()` を使用したプロジェクトルート検出
-- Defenderの変更前に管理者権限をチェック
+- レジストリ直接参照による除外設定の読み取り（確認・一覧に管理者権限は不要）
+- Defenderの変更前に管理者権限をチェック（トグルのみ）
 - シンプルなコマンド:
   - `:DefenderCheck` / `:KaihouCheck`
   - `:DefenderToggle` / `:KaihouToggle`
@@ -24,7 +25,7 @@
 
 - Neovim 0.10+
 - Windows
-- Windows Defenderが利用可能であること (`Get-MpPreference`, `Add-MpPreference`, `Remove-MpPreference`)
+- Windows Defenderが利用可能であること
 
 ## インストール (lazy.nvim)
 
@@ -38,11 +39,13 @@
 
 - `:DefenderCheck` / `:KaihouCheck`
   - 現在のプロジェクトルートが既にDefenderの除外設定に含まれているか確認します。
+  - Windowsレジストリを直接参照するため、管理者権限は不要です。
 - `:DefenderToggle` / `:KaihouToggle`
   - 現在のプロジェクトルートをDefenderの除外設定に追加/削除します。
-  - Defenderの設定を変更するには管理者権限が必要です。
+  - レジストリを変更するため管理者権限が必要です。
 - `:DefenderList` / `:KaihouList`
   - `vim.ui.select` を使用して、現在のDefenderの除外パスを一覧表示します。
+  - Windowsレジストリを直接参照するため、管理者権限は不要です。
 
 ## プロジェクトルートの検出
 
@@ -58,7 +61,8 @@
 ## 注意事項
 
 - Windows以外のシステムでは、コマンドは警告とともに安全にスキップされます。
-- すべてのDefenderコマンドは、Windows Defenderにアクセスするために管理者権限が必要です。
+- 確認・一覧操作はレジストリを直接参照するため、管理者権限は不要です。
+- トグル（追加/削除）操作はレジストリを変更するため、管理者権限が必要です。
 - すべての操作は非同期であり、UIをブロックしません。
 
 ## ライセンス
